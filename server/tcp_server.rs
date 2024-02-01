@@ -4,6 +4,10 @@ use std::{
     thread,
 };
 
+use colored::{
+    *
+};
+
 pub struct ServerSettings {
     pub ip: String,
     pub port: String,
@@ -19,10 +23,17 @@ fn handle_client(mut stream: TcpStream) {
                 return;
             }
             client_mame = String::from_utf8_lossy(&buf[..bytes_read]).to_string().trim().parse().unwrap();
-            println!("{} connected", client_mame);
+            println!("{} {}",
+                     client_mame.italic().yellow(),
+                     "connected".green(),
+            );
         },
         Err(e) => {
-            println!("Failed to read from socket: {}", e);
+
+            println!("{} {}",
+                     "Failed to read from socket:".italic().red(),
+                     e.to_string().red(),
+            );
             return;
         }
     }
@@ -31,10 +42,10 @@ fn handle_client(mut stream: TcpStream) {
         if bytes_read == 0 {
             return;
         }
-        println!(
+        print!(
             "{} => {}",
-            client_mame,
-            String::from_utf8_lossy(&buf[..bytes_read])
+            client_mame.italic().yellow(),
+            String::from_utf8_lossy(&buf[..bytes_read]).blue()
         );
     }
 }
@@ -42,17 +53,22 @@ fn handle_client(mut stream: TcpStream) {
 pub fn server(settings: &ServerSettings) {
     let listener = TcpListener::bind(format!("{}:{}", settings.ip, settings.port))
         .expect("Could not bind");
-    println!("Server listening on {}:{}", settings.ip, settings.port);
+    println!("{} {}",
+             "Server listening on".green(),
+             format!("{}:{}", settings.ip, settings.port).bold().green(),
+    );
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                println!("New connection: {}", stream.peer_addr().unwrap());
                 thread::spawn(move || {
                     handle_client(stream);
                 });
             }
             Err(e) => {
-                println!("Unable to connect: {}", e);
+                println!("{} {}",
+                        "Unable to connect:".italic().red(),
+                         e.to_string().red(),
+                );
             }
         }
     }
