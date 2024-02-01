@@ -1,10 +1,8 @@
 use std::{
-    io::{Read, Write},
+    io::{Read},
     net::{TcpListener, TcpStream},
     thread,
-    collections::HashMap,
 };
-use std::net::SocketAddr;
 
 pub struct ServerSettings {
     pub ip: String,
@@ -13,7 +11,6 @@ pub struct ServerSettings {
 
 fn handle_client(mut stream: TcpStream) {
     let mut buf = [0; 512];
-    let mut amount_of_messages: i32 = 0;
     let mut client_mame: String = String::new();
     stream.set_read_timeout(Some(std::time::Duration::from_millis(100_000))).expect("Failed to set read timeout");
     match stream.read(&mut buf) {
@@ -23,7 +20,6 @@ fn handle_client(mut stream: TcpStream) {
             }
             client_mame = String::from_utf8_lossy(&buf[..bytes_read]).to_string().trim().parse().unwrap();
             println!("{} connected", client_mame);
-            amount_of_messages += 1;
         },
         Err(e) => {
             println!("Failed to read from socket: {}", e);
@@ -36,8 +32,8 @@ fn handle_client(mut stream: TcpStream) {
             return;
         }
         println!(
-            "from {} received: {}",
-            stream.peer_addr().unwrap(),
+            "{} => {}",
+            client_mame,
             String::from_utf8_lossy(&buf[..bytes_read])
         );
     }
@@ -47,7 +43,6 @@ pub fn server(settings: &ServerSettings) {
     let listener = TcpListener::bind(format!("{}:{}", settings.ip, settings.port))
         .expect("Could not bind");
     println!("Server listening on {}:{}", settings.ip, settings.port);
-    let mut clients: HashMap<SocketAddr, String> = HashMap::new();
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {

@@ -7,5 +7,4 @@ fn main() {
     };
 
     tcp_server::server(settings);
-    println!("Hello, world!");
 }

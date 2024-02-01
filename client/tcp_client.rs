@@ -1,6 +1,6 @@
 use std::{
-    io::{Read, Write},
-    net::{TcpListener, TcpStream},
+    io::{Write, stdout},
+    net::{TcpStream},
     thread,
 };
 
@@ -12,7 +12,8 @@ pub struct ServerSettings {
 pub fn client(settings: &ServerSettings) {
     let mut username_input: String = String::new();
     let stdin = std::io::stdin();
-    println!("Enter your username: ");
+    print!("Enter your username: ");
+    stdout().flush().unwrap();
     stdin
         .read_line(&mut username_input)
         .expect("Failed to read from stdin");
@@ -34,18 +35,14 @@ pub fn client(settings: &ServerSettings) {
         .write(username_input.as_bytes())
         .expect("Failed to write to server");
 
-    let mut buf = [0; 512];
     loop {
         let mut user_input = String::new();
         let stdin = std::io::stdin();
-        println!("Enter your message: ");
+        print!("Enter your message: ");
+        stdout().flush().unwrap();
         stdin
             .read_line(&mut user_input)
             .expect("Failed to read from stdin");
-
-        if user_input.eq("Exit") {
-            break;
-        }
 
         stream
             .write(user_input.as_bytes())
